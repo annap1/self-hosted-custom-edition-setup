@@ -4,13 +4,41 @@
 : "${HELM_INSTALL_TIMEOUT:=1200s}"
 : "${HELM_UNINSTALL_TIMEOUT:=300s}"
 : "${K8S_READINESS_TIMEOUT:=900s}"
-: "${REGISTRY_URL:=artifact-public.instana.io}"
+: "${REGISTRY_URL:=artifact-public.instana.rocks}"
 : "${REGISTRY_USERNAME:=_}"
 : "${REGISTRY_PASSWORD:=$DOWNLOAD_KEY}"
 : "${HELM_REPO_URL:=https://artifact-public.instana.io/artifactory/rel-helm-customer-virtual}"
 : "${HELM_REPO_USERNAME:=_}"
 : "${HELM_REPO_PASSWORD:=$DOWNLOAD_KEY}"
 : "${DELETE_NAMESPACE_WHEN_UNINSTALL:=false}"
+
+# Get the registry URL with ICR-specific suffixes when using icr.io
+# Returns the registry URL to be used with image.registry parameter
+# The image.repository parameter should contain the original image name
+# Parameter: image prefix (e.g., "backend", "infrastructure", "jetstack", "self-hosted-images")
+get_registry_url() {
+  local image_prefix=$1
+
+  # For non-ICR registries, return REGISTRY_URL as-is
+  [[ "${REGISTRY_URL}" != "icr.io" ]] && echo "${REGISTRY_URL}" && return
+
+  # For ICR registry, append specific suffixes based on image prefix
+  case "${image_prefix}" in
+    backend)
+      echo "icr.io/instana-int/int-docker-backend-local"
+      ;;
+    infrastructure)
+      echo "icr.io/instana-int/int-docker-self-hosted-local"
+      ;;
+    agent|beeinstana|clickhouse|clickhouse-operator|instana-agent-operator|jetstack|k8sensor|self-hosted-images)
+      echo "icr.io/instana-rel/rel-docker-public-virtual"
+      ;;
+    *)
+      # Default for ICR
+      echo "icr.io"
+      ;;
+  esac
+}
 
 info() {
   echo '[INFO] ' "$@"
@@ -51,8 +79,8 @@ show_help() {
 
 helm_repo_add() {
   info "Adding helm repo..."
-  helm repo add instana "$HELM_REPO_URL" --username "$HELM_REPO_USERNAME" --password "$HELM_REPO_PASSWORD" --force-update >/dev/null
-  helm repo update >/dev/null
+  helm repo add instana "$HELM_REPO_URL" --username "$HELM_REPO_USERNAME" --password "$HELM_REPO_PASSWORD" --force-update
+  helm repo update
 }
 
 helm_repo_remove() {

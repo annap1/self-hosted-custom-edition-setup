@@ -5,8 +5,11 @@ install_datastore_beeinstana() {
   create_namespace_if_not_exist instana-beeinstana
   install_instana_registry instana-beeinstana
 
+  local registry_url
+  registry_url=$(get_registry_url "beeinstana")
+
   helm_upgrade "beeinstana-operator" "instana/beeinstana-operator" "instana-beeinstana" "${BEEINSTANA_OPERATOR_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="beeinstana/operator" \
     -f values/beeinstana-operator/instana-values.yaml
 
@@ -26,11 +29,11 @@ install_datastore_beeinstana() {
   read -ra file_args <<<"$(generate_helm_file_arguments beeinstana)"
 
   helm_upgrade "beeinstana" "instana/instana-beeinstana" "instana-beeinstana" "${BEEINSTANA_INSTANCE_CHART_VERSION}" "${args[@]}" \
-    --set-string aggregator.image.registry="${REGISTRY_URL}" \
+    --set-string aggregator.image.registry="${registry_url}" \
     --set-string aggregator.image.name="beeinstana/aggregator" \
-    --set-string config.image.registry="${REGISTRY_URL}" \
+    --set-string config.image.registry="${registry_url}" \
     --set-string config.image.name="beeinstana/monconfig" \
-    --set-string ingestor.image.registry="${REGISTRY_URL}" \
+    --set-string ingestor.image.registry="${registry_url}" \
     --set-string ingestor.image.name="beeinstana/ingestor" \
     "${file_args[@]}"
 }
@@ -43,11 +46,14 @@ install_datastore_cassandra() {
     kubectl apply -f values/cassandra/cassandra-scc.yaml
   fi
 
+  local registry_url
+  registry_url=$(get_registry_url "self-hosted-images")
+
   helm_upgrade "cass-operator" "instana/cass-operator" "instana-cassandra" "${CASSANDRA_OPERATOR_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/operator/cass-operator" \
-    --set-string imageConfig.systemLogger="${REGISTRY_URL}/self-hosted-images/3rd-party/datastore/system-logger:${CASSANDRA_OPERATOR_SYSTEMLOGGER_IMAGE_TAG}" \
-    --set-string imageConfig.k8ssandraClient="${REGISTRY_URL}/self-hosted-images/3rd-party/datastore/k8ssandra-client:${CASSANDRA_OPERATOR_K8SSANDRACLIENT_IMAGE_TAG}" \
+    --set-string imageConfig.systemLogger="${registry_url}/self-hosted-images/3rd-party/datastore/system-logger:${CASSANDRA_OPERATOR_SYSTEMLOGGER_IMAGE_TAG}" \
+    --set-string imageConfig.k8ssandraClient="${registry_url}/self-hosted-images/3rd-party/datastore/k8ssandra-client:${CASSANDRA_OPERATOR_K8SSANDRACLIENT_IMAGE_TAG}" \
     -f values/cassandra-operator/instana-values.yaml
 
   # Ensure Webhook Service and configuration are ready, preventing potential installation failures
@@ -57,7 +63,7 @@ install_datastore_cassandra() {
   read -ra file_args <<<"$(generate_helm_file_arguments cassandra)"
 
   helm_upgrade "cassandra" "instana/instana-cassandra" "instana-cassandra" "${CASSANDRA_INSTANCE_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/datastore/cassandra" \
     "${file_args[@]}"
 }
@@ -66,15 +72,18 @@ install_datastore_clickhouse() {
   create_namespace_if_not_exist instana-clickhouse
   install_instana_registry instana-clickhouse
 
+  local registry_url
+  registry_url=$(get_registry_url "clickhouse")
+
   helm_upgrade "clickhouse-operator" "instana/ibm-clickhouse-operator" "instana-clickhouse" "${CLICKHOUSE_OPERATOR_CHART_VERSION}" \
-    --set-string operator.image.repository="${REGISTRY_URL}/clickhouse-operator" \
+    --set-string operator.image.repository="${registry_url}/clickhouse-operator" \
     -f values/clickhouse-operator/instana-values.yaml
 
   local file_args
   read -ra file_args <<<"$(generate_helm_file_arguments clickhouse)"
 
   helm_upgrade "clickhouse" "instana/instana-clickhouse" "instana-clickhouse" "${CLICKHOUSE_INSTANCE_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     "${file_args[@]}"
 }
 
@@ -82,8 +91,11 @@ install_datastore_es() {
   create_namespace_if_not_exist instana-elastic
   install_instana_registry instana-elastic
 
+  local registry_url
+  registry_url=$(get_registry_url "self-hosted-images")
+
   helm_upgrade "elastic-operator" "instana/eck-operator" "instana-elastic" "${ES_OPERATOR_CHART_VERSION}" \
-    --set-string image.repository="${REGISTRY_URL}/self-hosted-images/3rd-party/operator/elasticsearch" \
+    --set-string image.repository="${registry_url}/self-hosted-images/3rd-party/operator/elasticsearch" \
     -f values/elasticsearch-operator/instana-values.yaml
 
   # Ensure Webhook Service and configuration are ready, preventing potential installation failures
@@ -93,7 +105,7 @@ install_datastore_es() {
   read -ra file_args <<<"$(generate_helm_file_arguments elasticsearch)"
 
   helm_upgrade "elasticsearch" "instana/instana-elasticsearch" "instana-elastic" "${ES_INSTANCE_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/datastore/elasticsearch" \
     "${file_args[@]}"
 }
@@ -102,12 +114,15 @@ install_datastore_kafka() {
   create_namespace_if_not_exist instana-kafka
   install_instana_registry instana-kafka
 
+  local registry_url
+  registry_url=$(get_registry_url "self-hosted-images")
+
   helm_upgrade "strimzi-kafka-operator" "instana/strimzi-kafka-operator" "instana-kafka" "${KAFKA_OPERATOR_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/operator" \
-    --set-string topicOperator.image.registry="${REGISTRY_URL}" \
+    --set-string topicOperator.image.registry="${registry_url}" \
     --set-string topicOperator.image.repository="self-hosted-images/3rd-party/operator" \
-    --set-string userOperator.image.registry="${REGISTRY_URL}" \
+    --set-string userOperator.image.registry="${registry_url}" \
     --set-string userOperator.image.repository="self-hosted-images/3rd-party/operator" \
     -f values/kafka-operator/instana-values.yaml
 
@@ -115,7 +130,7 @@ install_datastore_kafka() {
   read -ra file_args <<<"$(generate_helm_file_arguments kafka)"
 
   helm_upgrade "kafka" "instana/instana-kafka" "instana-kafka" "${KAFKA_INSTANCE_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/datastore/kafka" \
     "${file_args[@]}"
 }
@@ -123,6 +138,9 @@ install_datastore_kafka() {
 install_datastore_postgres() {
   create_namespace_if_not_exist instana-postgres
   install_instana_registry instana-postgres
+
+  local registry_url
+  registry_url=$(get_registry_url "self-hosted-images")
 
   if [ "$CLUSTER_TYPE" == "ocp" ]; then
     args+=(
@@ -132,7 +150,7 @@ install_datastore_postgres() {
   fi
 
   helm_upgrade "cnpg" "instana/cloudnative-pg" "instana-postgres" "${POSTGRES_OPERATOR_CHART_VERSION}" "${args[@]}" \
-     --set-string image.repository="${REGISTRY_URL}/self-hosted-images/3rd-party/operator/cloudnative-pg" \
+     --set-string image.repository="${registry_url}/self-hosted-images/3rd-party/operator/cloudnative-pg" \
      -f values/postgres-operator/instana-values.yaml
 
   # Ensure Webhook Service and configuration are ready, preventing potential installation failures
@@ -143,7 +161,7 @@ install_datastore_postgres() {
   read -ra file_args <<<"$(generate_helm_file_arguments postgres)"
 
   helm_upgrade "postgres" "instana/instana-postgres" "instana-postgres" "${POSTGRES_INSTANCE_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="self-hosted-images/3rd-party/datastore/cnpg-containers" \
     "${file_args[@]}"
 }
@@ -176,7 +194,7 @@ uninstall_cassandra() {
   helm_uninstall "cassandra" "instana-cassandra"
   helm_uninstall "cass-operator" "instana-cassandra"
   helm_uninstall "instana-registry" "instana-cassandra"
-  
+
   if [ "$CLUSTER_TYPE" == "ocp" ]; then
     kubectl delete scc cassandra-scc --ignore-not-found --wait=true
   fi
@@ -188,7 +206,7 @@ uninstall_clickhouse() {
   helm_uninstall "clickhouse" "instana-clickhouse"
   helm_uninstall "clickhouse-operator" "instana-clickhouse"
   helm_uninstall "instana-registry" "instana-clickhouse"
-  
+
   delete_namespace "instana-clickhouse"
 }
 

@@ -56,16 +56,19 @@ install_cert_manager() {
   create_namespace_if_not_exist cert-manager
   install_instana_registry cert-manager
 
+  local registry_url
+  registry_url=$(get_registry_url "jetstack")
+
   helm_upgrade "cert-manager" "instana/cert-manager" "cert-manager" "${CERT_MANAGER_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
     --set-string image.repository="jetstack/cert-manager-controller" \
-    --set-string webhook.image.registry="${REGISTRY_URL}" \
+    --set-string webhook.image.registry="${registry_url}" \
     --set-string webhook.image.repository="jetstack/cert-manager-webhook" \
-    --set-string cainjector.image.registry="${REGISTRY_URL}" \
+    --set-string cainjector.image.registry="${registry_url}" \
     --set-string cainjector.image.repository="jetstack/cert-manager-cainjector" \
-    --set-string acmesolver.image.registry="${REGISTRY_URL}" \
+    --set-string acmesolver.image.registry="${registry_url}" \
     --set-string acmesolver.image.repository="jetstack/cert-manager-acmesolver" \
-    --set-string startupapicheck.image.registry="${REGISTRY_URL}" \
+    --set-string startupapicheck.image.registry="${registry_url}" \
     --set-string startupapicheck.image.repository="jetstack/cert-manager-startupapicheck" \
     -f values/cert-manager/instana-values.yaml
 
@@ -97,11 +100,14 @@ install_instana_operator() {
   create_namespace_if_not_exist instana-operator
   install_instana_registry instana-operator
 
+  local registry_url
+  registry_url=$(get_registry_url "infrastructure")
+
   helm_upgrade "instana-enterprise-operator" "instana/instana-enterprise-operator" "instana-operator" "${INSTANA_OPERATOR_CHART_VERSION}" \
-    --set-string image.registry="${REGISTRY_URL}" \
-    --set-string operator.image.registry="${REGISTRY_URL}" \
+    --set-string image.registry="${registry_url}" \
+    --set-string operator.image.registry="${registry_url}" \
     --set-string operator.image.repository="infrastructure/instana-enterprise-operator" \
-    --set-string webhook.image.registry="${REGISTRY_URL}" \
+    --set-string webhook.image.registry="${registry_url}" \
     --set-string webhook.image.repository="infrastructure/instana-enterprise-operator-webhook" \
     "${file_args[@]}"
 
@@ -208,18 +214,30 @@ install_instana_core() {
 
   local file_args
   read -ra file_args <<<"$(generate_helm_file_arguments core)"
-  #gateway cnfiguration checks
+
+  local registry_url
+  registry_url=$(get_registry_url "backend")
+
+  #gateway configuration checks
   HELM_ARGS=()
 
-  if [ "$IS_GATEWAY_V2_ENABLED" == "true" ] && [ -n "$REGISTRY_URL" ]; then
+  # Set registry for core images
+  HELM_ARGS+=(
+    --set-string imageConfig.registry="${registry_url}"
+  )
+
+  if [ "$IS_GATEWAY_V2_ENABLED" == "true" ]; then
+
+    gateway_registry_url=$(get_registry_url "self-hosted-images")
+    gateway_controller_registry_url=$(get_registry_url "infrastructure")
+
     HELM_ARGS+=(
-      --set-string gatewayConfig.gateway.imageConfig.registry="${REGISTRY_URL}"
-      --set-string gatewayConfig.controller.imageConfig.registry="${REGISTRY_URL}"
+      --set-string gatewayConfig.gateway.imageConfig.registry="${gateway_registry_url}"
+      --set-string gatewayConfig.controller.imageConfig.registry="${gateway_controller_registry_url}"
     )
   fi
 
   helm_upgrade "instana-core" "instana/instana-core" "instana-core" "${INSTANA_CORE_CHART_VERSION}" \
-    --set-string imageConfig.registry="${REGISTRY_URL}" \
     --set-literal salesKey="${SALES_KEY}" \
     --set-literal repositoryPassword="${DOWNLOAD_KEY}" \
     "${HELM_ARGS[@]}" \
@@ -241,12 +259,20 @@ install_instana_unit() {
   local file_args
   read -ra file_args <<<"$(generate_helm_file_arguments unit)"
 
+  local registry_url
+  registry_url=$(get_registry_url "backend")
+
+  # Prepare cleanup job image configuration
+  local cleanup_job_args=(
+    --set-string cleanupJob.image.registry="${registry_url}"
+  )
+
   helm_upgrade "${INSTANA_UNIT_NAME}-${INSTANA_TENANT_NAME}" "instana/instana-unit" "instana-units" "${INSTANA_UNIT_CHART_VERSION}" \
     --set tenantName="${INSTANA_TENANT_NAME}" \
     --set unitName="${INSTANA_UNIT_NAME}"\
     --set licenses="{$license_content}" \
     --set-literal downloadKey="$DOWNLOAD_KEY" \
-    --set-string cleanupJob.image.registry="${REGISTRY_URL}" \
+    "${cleanup_job_args[@]}" \
     ${AGENT_KEY:+--set agentKeys="{$AGENT_KEY}"} \
     "${file_args[@]}"
 
