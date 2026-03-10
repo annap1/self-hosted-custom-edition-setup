@@ -4,7 +4,7 @@
 : "${HELM_INSTALL_TIMEOUT:=1200s}"
 : "${HELM_UNINSTALL_TIMEOUT:=300s}"
 : "${K8S_READINESS_TIMEOUT:=900s}"
-: "${REGISTRY_URL:=artifact-public.instana.rocks}"
+: "${REGISTRY_URL:=artifact-public.instana.io}"
 : "${REGISTRY_USERNAME:=_}"
 : "${REGISTRY_PASSWORD:=$DOWNLOAD_KEY}"
 : "${HELM_REPO_URL:=https://artifact-public.instana.io/artifactory/rel-helm-customer-virtual}"
