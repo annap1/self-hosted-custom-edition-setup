@@ -106,7 +106,6 @@ install_datastore_es() {
 
   helm_upgrade "elasticsearch" "instana/instana-elasticsearch" "instana-elastic" "${ES_INSTANCE_CHART_VERSION}" \
     --set-string image.registry="${registry_url}" \
-    --set-string image.repository="self-hosted-images/3rd-party/datastore/elasticsearch" \
     "${file_args[@]}"
 }
 

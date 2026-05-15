@@ -37,6 +37,7 @@ nodeSets:
                 topologyKey: "kubernetes.io/hostname"
 image:
   tag: "8.18.6_v0.16.10"
+  repository: "self-hosted-images/3rd-party/datastore/elasticsearch"
 imagePullSecrets:
   - name: "instana-registry"
 version: 8.18.6
