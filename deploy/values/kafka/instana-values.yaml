@@ -32,10 +32,10 @@ affinity:
               strimzi.io/pool-name: controller
           topologyKey: "kubernetes.io/hostname"
 image:
-  tag: "0.47.0-kafka-3.9.1_v0.28.0"
+  tag: "0.51.0-kafka-4.1.1_v0.32.0"
 imagePullSecrets:
   - name: "instana-registry"
-version: 3.9.1
+version: 4.1.1
 kraft: "enabled"
 nodePools: "enabled"
 resources:

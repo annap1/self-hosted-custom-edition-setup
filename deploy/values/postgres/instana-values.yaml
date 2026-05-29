@@ -18,6 +18,6 @@ affinity:
 storage:
   size: 50Gi
 image:
-  tag: "15_v0.34.0"
+  tag: "15_v0.38.0"
 imagePullSecrets:
   - name: "instana-registry"

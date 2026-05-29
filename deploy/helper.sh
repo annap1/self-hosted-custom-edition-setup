@@ -97,6 +97,17 @@ helm_upgrade() {
 
   info "Installing $release_name in $namespace namespace..."
 
+  # Update CRDs before helm upgrade
+  local temp_dir=$(mktemp -d)
+  helm pull "$chart_name" --version "$version" --untar --untardir "$temp_dir"
+  local chart_dir=$(basename "$chart_name")
+
+  if [ -d "${temp_dir}/${chart_dir}/crds" ]; then
+    info "Updating CRDs for $chart_name..."
+    kubectl apply --server-side --force-conflicts -f "${temp_dir}/${chart_dir}/crds"
+  fi
+  rm -rf "$temp_dir"
+
   helm upgrade --wait --wait-for-jobs --timeout "${HELM_INSTALL_TIMEOUT}" --install "$release_name" "$chart_name" -n "$namespace" \
     --version "$version" "${extra_args[@]}" >/dev/null
 }

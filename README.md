@@ -526,10 +526,10 @@ template:
 
 # Image configuration
 image:
-  tag: "0.47.0-kafka-3.9.1_v0.24.0"    # Kafka image tag
+  tag: "0.51.0-kafka-4.1.1_v0.32.0"    # Kafka image tag
 
 # Kafka version
-version: 3.9.1                          # Kafka version
+version: 4.1.1                          # Kafka version
 
 # KRaft mode (recommended)
 kraft: "enabled"                        # Enable KRaft mode (default: enabled)
@@ -569,12 +569,12 @@ You can modify BeeInstana configuration in `deploy/values/beeinstana/custom-valu
 
 ```yaml
 
-version: "1.3.24"
+version: "1.3.28"
 
 # Aggregator configuration
 aggregator:
   image:
-    tag: v1.85.76-release
+    tag: v1.85.108-release
   cpu: 4                                # CPU request (4 cores) (default: 4)
   memory: 48Gi                          # Memory request (48 GB) (default: 48Gi)
   limitMemory: true                     # Limit memory (default: true)
@@ -588,7 +588,7 @@ aggregator:
 # Config configuration
 config:
   image:
-    tag: v2.44.0
+    tag: v2.56.0
   cpu: 200m                             # CPU request (0.2 core) (default: 200m)
   memory: 200Mi                         # Memory request (200 MB) (default: 200Mi)
   limitMemory: true                     # Limit memory (default: true)
@@ -597,7 +597,7 @@ config:
 # Ingestor configuration
 ingestor:
   image:
-    tag: v1.85.76-release
+    tag: v1.85.108-release
   cpu: 2                                # CPU request (2 cores) (default: 2)
   memory: 4Gi                           # Memory request (4 GB) (default: 4Gi)
   limitMemory: true                     # Limit memory (default: true)
