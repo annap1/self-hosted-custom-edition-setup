@@ -130,7 +130,7 @@ Alcuni componenti di terze parti potrebbero avere supporto limitato per s390x:
 ### 1. Clona il Repository
 
 ```bash
-git clone https://github.com/instana/self-hosted-custom-edition-setup.git
+git clone https://github.com/anna1p/self-hosted-custom-edition-setup.git
 cd self-hosted-custom-edition-setup/deploy
 ```
 
