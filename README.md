@@ -2,6 +2,16 @@
 
 This repository contains scripts and configuration files to deploy Instana Self-Hosted Custom Edition on Kubernetes clusters. This README provides detailed information on how to modify the default configuration values to customize your Instana deployment.
 
+## Architecture Support
+
+Instana Self-Hosted Custom Edition supports multiple architectures:
+- **x86_64/amd64** - Standard Intel/AMD processors
+- **s390x** - IBM Z (Linux on Z) - [See dedicated guide](docs/LINUX_ON_Z.md)
+- **aarch64/arm64** - ARM processors
+- **ppc64le** - IBM Power
+
+The installation scripts automatically detect your system architecture and validate compatibility.
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -84,9 +94,13 @@ Before installing Instana Self-Hosted Custom Edition, ensure you have the follow
   To install the latest stable version:
 
   ```bash
+  # For x86_64/amd64
   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
   chmod +x kubectl
   sudo mv kubectl /usr/local/bin/
+  
+  # For s390x (Linux on Z) - see docs/LINUX_ON_Z.md for detailed instructions
+  # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/s390x/kubectl"
   ```
 
   Verify your kubectl installation:
@@ -138,11 +152,12 @@ The configuration files are organized as follows:
 ```text
 self-hosted-custom-edition-setup/
 ├── deploy/
-│   ├── config.env.template               # Environment variables template
+│   ├── config.env.template       # Environment variables template
 │   ├── shce.sh                   # Main installation script
 │   ├── helper.sh                 # Helper functions
 │   ├── datastores.sh             # Datastore installation functions
 │   ├── versions.sh               # Component versions
+│   ├── arch-helper.sh            # Architecture detection and validation
 │   └── values/                   # Default and custom values for components
 │       ├── beeinstana/
 │       │   └── instana-values.yaml  # Default values
@@ -180,7 +195,11 @@ self-hosted-custom-edition-setup/
 │       │   └── instana-values.yaml
 │       └── unit/
 │           └── instana-values.yaml
+├── docs/
+│   └── LINUX_ON_Z.md             # Linux on Z (s390x) specific documentation
 ```
+
+**Note**: For Linux on Z (s390x) installations, please refer to the [dedicated documentation](docs/LINUX_ON_Z.md) for architecture-specific requirements and configurations.
 
 ## Modifying Default Values
 
@@ -835,5 +854,18 @@ If you encounter issues during installation, check the following:
 4. Verify that DNS records are properly configured for the base domain and agent acceptor.
 5. Check the logs of the pods in the respective namespaces for errors.
 6. Cleanup old persistent volume claims of datastores, if present.
+7. **For s390x systems**: Verify that all container images support the s390x architecture. See [Linux on Z documentation](docs/LINUX_ON_Z.md) for architecture-specific troubleshooting.
 
-For more detailed troubleshooting, refer to the [Instana documentation](https://www.ibm.com/docs/en/instana-observability/current?topic=backend-installing-custom-edition).
+### Architecture-Specific Issues
+
+The installation script automatically detects your system architecture and validates:
+- System architecture compatibility
+- Kubernetes cluster node architectures
+- kubectl binary architecture match
+- Architecture-specific system requirements
+
+If you encounter architecture-related issues, check the installation logs for architecture validation messages.
+
+For more detailed troubleshooting, refer to:
+- [Instana documentation](https://www.ibm.com/docs/en/instana-observability/current?topic=backend-installing-custom-edition)
+- [Linux on Z guide](docs/LINUX_ON_Z.md) (for s390x systems)

@@ -1,0 +1,97 @@
+# Instana Core Configuration for Linux on Z (s390x)
+# This file contains recommended configurations for s390x architecture
+# Copy values to custom-values.yaml and adjust as needed
+
+# Base domain configuration
+baseDomain: "instana.example.com"
+
+# Agent acceptor configuration
+acceptors:
+  agent:
+    host: "agent.instana.example.com"
+    port: 443
+
+# Image configuration
+imageConfig:
+  # Images are multi-arch and will automatically use s390x variants
+  tag: 3.xxx.xxx-x
+  # registry: artifact-public.instana.io
+  # repository: backend
+
+# Storage configuration optimized for s390x
+storageConfigs:
+  rawSpans:
+    pvcConfig:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 500Gi  # Increased for s390x workloads
+      # storageClassName: "your-storage-class"
+
+# Resource configuration optimized for s390x
+# s390x systems typically have different CPU/memory characteristics
+# Adjust these values based on your specific hardware
+
+# Email configuration (optional)
+# emailConfig:
+#   smtpConfig:
+#     from: "instana@example.com"
+#     host: "smtp.example.com"
+#     port: 587
+#     username: "smtp-user"
+#     password: "smtp-password"
+#     useTLS: true
+
+# Gateway configuration
+gatewayConfig:
+  enabled: true
+  gateway:
+    # Resource requests optimized for s390x
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "4Gi"
+      limits:
+        memory: "4Gi"
+    loadBalancerConfig:
+      enabled: true
+      # externalTrafficPolicy: Local
+
+# Feature flags
+featureFlags:
+  - name: feature.logging.enabled
+    enabled: true
+  - name: feature.synthetics.enabled
+    enabled: true
+  - name: feature.internal.monitoring.unit
+    enabled: true
+  - name: feature.beeinstana.infra.metrics.enabled
+    enabled: true
+
+# Node selector for s390x nodes (if cluster has mixed architectures)
+# nodeSelector:
+#   kubernetes.io/arch: s390x
+
+# Tolerations (if needed)
+# tolerations:
+#   - key: "arch"
+#     operator: "Equal"
+#     value: "s390x"
+#     effect: "NoSchedule"
+
+# Affinity rules for high availability on s390x
+# affinity:
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#     - weight: 100
+#       podAffinityTerm:
+#         labelSelector:
+#           matchExpressions:
+#           - key: app.kubernetes.io/name
+#             operator: In
+#             values:
+#             - instana-core
+#         topologyKey: kubernetes.io/hostname
+
+# Made with Bob

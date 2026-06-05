@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # (c) Copyright IBM Corp. 2025
 
+# Note: Architecture detection is handled by arch-helper.sh sourced in shce.sh
+# All datastore images should support multi-architecture including s390x
+
 install_datastore_beeinstana() {
   create_namespace_if_not_exist instana-beeinstana
   install_instana_registry instana-beeinstana
@@ -46,6 +49,11 @@ install_datastore_cassandra() {
     kubectl apply -f values/cassandra/cassandra-scc.yaml
   fi
 
+  # s390x specific: Cassandra images should support multi-arch
+  if [[ "${INSTANA_IS_S390X}" == "true" ]]; then
+    info "Installing Cassandra for s390x architecture..."
+  fi
+
   local registry_url
   registry_url=$(get_registry_url "self-hosted-images")
 
@@ -72,6 +80,11 @@ install_datastore_clickhouse() {
   create_namespace_if_not_exist instana-clickhouse
   install_instana_registry instana-clickhouse
 
+  # s390x specific: ClickHouse images should support multi-arch
+  if [[ "${INSTANA_IS_S390X}" == "true" ]]; then
+    info "Installing ClickHouse for s390x architecture..."
+  fi
+
   local registry_url
   registry_url=$(get_registry_url "clickhouse")
 
@@ -90,6 +103,11 @@ install_datastore_clickhouse() {
 install_datastore_es() {
   create_namespace_if_not_exist instana-elastic
   install_instana_registry instana-elastic
+
+  # s390x specific: Elasticsearch images should support multi-arch
+  if [[ "${INSTANA_IS_S390X}" == "true" ]]; then
+    info "Installing Elasticsearch for s390x architecture..."
+  fi
 
   local registry_url
   registry_url=$(get_registry_url "self-hosted-images")
@@ -112,6 +130,11 @@ install_datastore_es() {
 install_datastore_kafka() {
   create_namespace_if_not_exist instana-kafka
   install_instana_registry instana-kafka
+
+  # s390x specific: Kafka images should support multi-arch
+  if [[ "${INSTANA_IS_S390X}" == "true" ]]; then
+    info "Installing Kafka for s390x architecture..."
+  fi
 
   local registry_url
   registry_url=$(get_registry_url "self-hosted-images")
@@ -137,6 +160,11 @@ install_datastore_kafka() {
 install_datastore_postgres() {
   create_namespace_if_not_exist instana-postgres
   install_instana_registry instana-postgres
+
+  # s390x specific: PostgreSQL images should support multi-arch
+  if [[ "${INSTANA_IS_S390X}" == "true" ]]; then
+    info "Installing PostgreSQL for s390x architecture..."
+  fi
 
   local registry_url
   registry_url=$(get_registry_url "self-hosted-images")

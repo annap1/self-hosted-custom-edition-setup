@@ -3,6 +3,10 @@
 
 set -o errexit
 
+# Source architecture helper functions
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)
+source "${SCRIPT_DIR}/arch-helper.sh"
+
 validate_k8s_access() {
   info "Checking if Kubernetes cluster is accessible..."
   kubectl get node >/dev/null 2>&1 || error "You must be logged in to the Kubernetes server before running this tool."
@@ -48,8 +52,14 @@ precheck() {
   precheck_config_file
   validate_cluster_type
   validate_k8s_access
+  validate_architecture
+  export_arch_info
+  validate_kubectl_architecture
+  check_s390x_requirements
+  validate_cluster_architecture
   validate_config
   check_storage
+  print_arch_notes
 }
 
 install_cert_manager() {
@@ -363,6 +373,8 @@ main() {
   script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)
   pushd "$script_dir" >/dev/null 2>&1 || exit
 
+  # Source architecture helper first
+  source ./arch-helper.sh
 
   BASE_DOMAIN=$(get_yaml_value "core" ".baseDomain")
   AGENT_ACCEPTOR=$(get_yaml_value  "core" ".acceptors.agent.host")
